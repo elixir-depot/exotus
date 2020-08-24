@@ -82,17 +82,4 @@ defmodule Exotus.Upload do
       _ -> :file_write_error
     end
   end
-
-  # @impl GenServer
-  # def handle_call({:append, file}, _from, state) do
-  #   {:ok, source} = File.open(file, [:read, :binary, :raw])
-  #   {:ok, destination} = File.open(state.path, [:append, :binary, :delayed_write, :raw])
-
-  #   IO.binwrite(destination, IO.binread(source, :all))
-
-  #   :ok = File.close(source)
-  #   :ok = File.close(destination)
-
-  #   {:reply, :ok, state}
-  # end
 end
