@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <input type="file" name="" id="input">
+  <h1 id="header">Hello world</h1>
+  <p id="url"></p>
+
+  <script src="tus.min.js"></script>
+  <script>
+    input.addEventListener("change", function (e) {
+      let file = e.target.files[0];
+      let upload = new tus.Upload(file, {
+        endpoint: "http://localhost:4001/files/",
+        chunkSize: 1024,
+        onSuccess: function () {
+          url.innerHTML = upload.url
+          header.innerHTML = "DONE"
+        }
+      });
+      upload.start()
+    })
+  </script>
+</body>
+
+</html>
