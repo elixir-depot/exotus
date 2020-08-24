@@ -84,6 +84,25 @@ defmodule Exotus.PlugTest do
       assert get_resp_header(conn, "tus-resumable") == ["1.0.0"]
     end
 
+    test "http override", %{id: id} do
+      start_supervised({Exotus.Upload, %{id: id, content_length: 1024}})
+
+      conn =
+        :post
+        |> conn("/#{id}", "1234567890")
+        |> put_req_header("tus-resumable", "1.0.0")
+        |> put_req_header("content-type", "application/offset+octet-stream")
+        |> put_req_header("upload-offset", "0")
+        |> put_req_header("x-http-method-override", "patch")
+
+      conn = Exotus.Plug.Router.call(conn, Exotus.Plug.Router.init([]))
+
+      assert conn.state == :sent
+      assert conn.status == 204
+      assert get_resp_header(conn, "upload-offset") == ["10"]
+      assert get_resp_header(conn, "tus-resumable") == ["1.0.0"]
+    end
+
     test "to much", %{id: id} do
       start_supervised({Exotus.Upload, %{id: id, content_length: 8}})
 

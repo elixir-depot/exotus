@@ -18,6 +18,7 @@ defmodule Exotus.Plug.Router do
   end
 
   plug Plug.Head
+  plug Exodus.Plug.MethodOverride
   plug :match
   plug :match_protocol_version, Exotus.supported_versions()
   plug :dispatch

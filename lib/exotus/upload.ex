@@ -33,21 +33,6 @@ defmodule Exotus.Upload do
   # Callbacks
   @impl GenStateMachine
 
-  # Stop if chunks don't come in within reasonable time
-  def handle_event(:timeout, :stop_waiting, :waiting, _data) do
-    {:stop, :normal}
-  end
-
-  # Stop if the whole file is not uploaded in within reasonable time
-  def handle_event(:state_timeout, :stop_waiting, :waiting, _data) do
-    {:stop, :normal}
-  end
-
-  # Stop if file was retained for a certain amount of time
-  def handle_event(:state_timeout, :cleanup, :complete, _data) do
-    {:stop, :normal}
-  end
-
   # Handle appending new chunks (only when still waiting)
   def handle_event({:call, from}, {:append, offset, iodata}, :waiting, data) do
     with :ok <- match_offset(data.upload_offset, offset),
@@ -85,6 +70,21 @@ defmodule Exotus.Upload do
     }
 
     {:keep_state_and_data, [{:reply, from, status}]}
+  end
+
+  # Stop if chunks don't come in within reasonable time
+  def handle_event(:timeout, :stop_waiting, :waiting, _data) do
+    {:stop, :normal}
+  end
+
+  # Stop if the whole file is not uploaded in within reasonable time
+  def handle_event(:state_timeout, :stop_waiting, :waiting, _data) do
+    {:stop, :normal}
+  end
+
+  # Stop if file was retained for a certain amount of time
+  def handle_event(:state_timeout, :cleanup, :complete, _data) do
+    {:stop, :normal}
   end
 
   # Timeouts
