@@ -18,13 +18,17 @@ defmodule Exotus.Plug.Router do
   end
 
   plug Plug.Head
-  plug Exodus.Plug.MethodOverride
+  plug Exotus.Plug.MethodOverride
   plug :match
   plug :match_protocol_version, Exotus.supported_versions()
   plug :dispatch
 
   options "/" do
     Exotus.Plug.Options.call(conn, [])
+  end
+
+  post "/" do
+    Exotus.Plug.Post.call(conn, [])
   end
 
   get "*file_path" do

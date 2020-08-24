@@ -13,16 +13,22 @@ defmodule Exotus.Plug.Head do
   plug :dispatch
 
   match _ do
-    case Exotus.Upload.status(conn.assigns.file) do
-      %{length: length, offset: offset} when is_integer(length) and is_integer(offset) ->
-        conn
-        |> put_resp_header("upload-length", Integer.to_string(length))
-        |> put_resp_header("upload-offset", Integer.to_string(offset))
+    %{offset: offset} = status = Exotus.Upload.status(conn.assigns.file)
 
-      %{offset: offset} when is_integer(offset) ->
+    Enum.reduce(status, conn, fn
+      {:length, length}, conn when is_integer(length) ->
+        put_resp_header(conn, "upload-length", Integer.to_string(length))
+
+      {:length, :deferred}, conn ->
+        put_resp_header(conn, "upload-defer-length", "1")
+
+      {:metadata, meta}, conn when byte_size(meta) > 0 ->
+        put_resp_header(conn, "upload-metadata", meta)
+
+      _, conn ->
         conn
-        |> put_resp_header("upload-offset", Integer.to_string(offset))
-    end
+    end)
+    |> put_resp_header("upload-offset", Integer.to_string(offset))
     |> send_resp(:ok, "")
   end
 

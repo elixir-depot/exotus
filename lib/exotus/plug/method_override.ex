@@ -1,4 +1,4 @@
-defmodule Exodus.Plug.MethodOverride do
+defmodule Exotus.Plug.MethodOverride do
   @behaviour Plug
 
   @allowed_methods ~w(DELETE PATCH)
@@ -11,13 +11,18 @@ defmodule Exodus.Plug.MethodOverride do
   def call(%Plug.Conn{} = conn, []), do: conn
 
   defp override_method(conn) do
-    [method] = Plug.Conn.get_req_header(conn, "x-http-method-override")
-    method = String.upcase(method)
+    case Plug.Conn.get_req_header(conn, "x-http-method-override") do
+      [method] ->
+        method = String.upcase(method)
 
-    if method in @allowed_methods do
-      %{conn | method: method}
-    else
-      conn
+        if method in @allowed_methods do
+          %{conn | method: method}
+        else
+          conn
+        end
+
+      _ ->
+        conn
     end
   end
 end

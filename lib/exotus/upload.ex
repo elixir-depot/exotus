@@ -22,7 +22,7 @@ defmodule Exotus.Upload do
       path: path,
       content_length: Map.fetch!(inital_data, :content_length),
       upload_offset: 0,
-      metadata: Map.get(inital_data, :metadata, %{})
+      metadata: Map.get(inital_data, :metadata, "")
     }
 
     Exotus.Registry.register(data.id)
@@ -66,7 +66,8 @@ defmodule Exotus.Upload do
   def handle_event({:call, from}, :get_status, _state, data) do
     status = %{
       length: data.content_length,
-      offset: data.upload_offset
+      offset: data.upload_offset,
+      metadata: data.metadata
     }
 
     {:keep_state_and_data, [{:reply, from, status}]}

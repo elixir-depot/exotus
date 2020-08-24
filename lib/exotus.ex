@@ -22,10 +22,10 @@ defmodule Exotus do
   ## Example
 
       iex> Exotus.supported_extensions()
-      []
+      ["creation", "creation-defer-length"]
 
   """
   def supported_extensions do
-    []
+    ["creation", "creation-defer-length"]
   end
 end
