@@ -46,13 +46,11 @@ defmodule Exotus.Upload do
   end
 
   def handle_event({:call, from}, {:append, offset, iodata}, _state, data) do
-    binary = IO.iodata_to_binary(iodata)
-
     with :ok <- match_offset(data.upload_offset, offset),
-         {:ok, new_offset} <- new_offset(data.upload_offset, binary, data.content_length),
-         :ok <- write_file(data.path, binary) do
-      data = Map.put(data, :upload_offset, new_offset)
-      {:keep_state, data, [{:reply, from, {:ok, new_offset}}]}
+         {:ok, new_offset} <- new_offset(data.upload_offset, iodata, data.content_length),
+         :ok <- write_file(data.path, iodata) do
+      {:keep_state, Map.put(data, :upload_offset, new_offset),
+       [{:reply, from, {:ok, new_offset}}]}
     else
       :file_size_exceeded ->
         {:keep_state_and_data, [{:reply, from, {:error, :file_size_exceeded}}]}
@@ -73,13 +71,13 @@ defmodule Exotus.Upload do
     end
   end
 
-  defp new_offset(current, binary, allowed) do
-    new = current + byte_size(binary)
+  defp new_offset(current, iodata, allowed) do
+    new = current + IO.iodata_length(iodata)
     if new <= allowed, do: {:ok, new}, else: :file_size_exceeded
   end
 
-  defp write_file(file, binary) do
-    case File.write(file, binary, [:read, :binary, :raw]) do
+  defp write_file(file, iodata) do
+    case File.write(file, iodata) do
       :ok -> :ok
       _ -> :file_write_error
     end
