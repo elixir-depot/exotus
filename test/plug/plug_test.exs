@@ -17,7 +17,11 @@ defmodule Exotus.PlugTest do
       assert conn.state == :sent
       assert conn.status == 204
       assert get_resp_header(conn, "tus-version") == ["1.0.0"]
-      assert get_resp_header(conn, "tus-extension") == ["creation,creation-defer-length"]
+
+      assert get_resp_header(conn, "tus-extension") == [
+               "creation,creation-defer-length,creation-with-upload"
+             ]
+
       assert get_resp_header(conn, "tus-max-size") == ["1024"]
     end
   end
@@ -226,6 +230,57 @@ defmodule Exotus.PlugTest do
       assert get_resp_header(conn, "upload-metadata") == [
                "filename d29ybGRfZG9taW5hdGlvbl9wbGFuLnBkZg==,is_confidential"
              ]
+    end
+
+    test "with upload" do
+      conn =
+        :post
+        |> conn("/", "1234567890")
+        |> put_req_header("tus-resumable", "1.0.0")
+        |> put_req_header("content-length", "10")
+        |> put_req_header("upload-length", "1024")
+        |> put_req_header("content-type", "application/offset+octet-stream")
+        |> put_req_header(
+          "upload-metadata",
+          "filename d29ybGRfZG9taW5hdGlvbl9wbGFuLnBkZg==,is_confidential"
+        )
+
+      conn = Exotus.Plug.Router.call(conn, Exotus.Plug.Router.init([]))
+
+      assert get_resp_header(conn, "upload-offset") == ["10"]
+
+      id = get_resp_header(conn, "location") |> hd()
+
+      conn =
+        :head
+        |> conn("/#{id}")
+        |> put_req_header("tus-resumable", "1.0.0")
+
+      conn = Exotus.Plug.Router.call(conn, Exotus.Plug.Router.init([]))
+
+      assert conn.state == :sent
+      assert conn.status == 200
+      assert get_resp_header(conn, "upload-offset") == ["10"]
+    end
+
+    test "with upload - file to big" do
+      conn =
+        :post
+        |> conn("/", "1234567890")
+        |> put_req_header("tus-resumable", "1.0.0")
+        |> put_req_header("content-length", "10")
+        |> put_req_header("upload-length", "9")
+        |> put_req_header("content-type", "application/offset+octet-stream")
+        |> put_req_header(
+          "upload-metadata",
+          "filename d29ybGRfZG9taW5hdGlvbl9wbGFuLnBkZg==,is_confidential"
+        )
+
+      conn = Exotus.Plug.Router.call(conn, Exotus.Plug.Router.init([]))
+
+      assert conn.state == :sent
+      assert conn.status == 413
+      assert get_resp_header(conn, "tus-resumable") == ["1.0.0"]
     end
   end
 end
