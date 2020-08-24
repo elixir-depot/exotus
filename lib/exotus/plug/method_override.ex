@@ -1,4 +1,5 @@
 defmodule Exotus.Plug.MethodOverride do
+  @moduledoc false
   @behaviour Plug
 
   @allowed_methods ~w(DELETE PATCH)

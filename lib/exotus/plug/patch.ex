@@ -1,4 +1,5 @@
 defmodule Exotus.Plug.Patch do
+  @moduledoc false
   use Plug.Router
 
   def call(conn, path) do

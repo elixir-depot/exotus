@@ -1,4 +1,7 @@
 defmodule Exotus.Plug.Router do
+  @moduledoc """
+  Plug Router for handling tus requests.
+  """
   use Plug.Router
 
   def init(opts) do

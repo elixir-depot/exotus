@@ -1,4 +1,7 @@
 defmodule Exotus.Upload do
+  @moduledoc """
+  Handling the lifecycle of a chunked upload.
+  """
   use GenStateMachine
 
   def start_link(inital_data) do

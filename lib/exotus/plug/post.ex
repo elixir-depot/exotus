@@ -1,4 +1,5 @@
 defmodule Exotus.Plug.Post do
+  @moduledoc false
   use Plug.Router
 
   plug :fetch_length
